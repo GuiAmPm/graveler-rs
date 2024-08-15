@@ -1,4 +1,4 @@
-use rand::prelude::*;
+use rand::{distributions::Uniform, prelude::*};
 use rayon::prelude::*;
 use std::time::Instant;
 
@@ -14,23 +14,18 @@ fn main() {
     let start_instant = Instant::now();
 
     const ROLL_COUNT: u32 = 1_000_000_000;
+
+    // Create the distribution of values beforehand
+    let between = Uniform::from(0..4);
+
     let results = (0..ROLL_COUNT) // iterate through the number of samples
         .into_par_iter() // in parallel
         .map(|roll_number| {
-            let mut successes: u8 = 0;
             let mut rng = ThreadRng::default();
 
-            // Loops through the number of movements that are required to successfully "win"
-            for _ in 0..231 {
-                // Generate a random number between 0 and 4, not including 4
-                let roll = rng.gen_range(0..4);
-
-                // Roll is 0 (1/4 - "Graveler is paralyzed")
-                if roll == 0 {
-                    // Count one for "Successes" (times a move were unable to be made)
-                    successes += 1;
-                }
-            }
+            let successes = (0..231) // Number of required movements
+                .filter(|_| between.sample(&mut rng) == 0) // Filter the results that are equal to 0 (1/4)
+                .count(); // Count the number of results
 
             (roll_number, successes)
         })
