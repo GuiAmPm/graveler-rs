@@ -19,13 +19,12 @@ fn main() {
     let between = Uniform::from(0..4);
 
     let results = (0..ROLL_COUNT) // iterate through the number of samples
-        .into_par_iter() // in parallel
         .map(|roll_number| {
             let mut rng = ThreadRng::default();
 
             let successes = (0..231) // Number of required movements
                 .filter(|_| between.sample(&mut rng) == 0) // Filter the results that are equal to 0 (1/4)
-                .count(); // Count the number of results
+                .count() as u8; // Count the number of results
 
             (roll_number, successes)
         })
