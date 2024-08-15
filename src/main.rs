@@ -18,7 +18,8 @@ fn main() {
     // Create the distribution of values beforehand
     let between = Uniform::from(0..4);
 
-    let results = (0..ROLL_COUNT) // iterate through the number of samples
+    let results: Vec<(u32, u8)> = (0..ROLL_COUNT) // iterate through the number of samples
+        .into_par_iter()
         .map(|roll_number| {
             let mut rng = ThreadRng::default();
 
@@ -29,7 +30,7 @@ fn main() {
             (roll_number, successes)
         })
         .collect::<Vec<_>>(); // Collect all results in memory.
-                              // That will take around (4 + 1) * 1_000_000_000 bytes or ~4GB of RAM
+                              // That will take around (4 + 1) * 1_000_000_000 bytes or ~5GB of RAM
 
     // Note: Since it's running in parallel, I can't simply break whenever something is above 177.
     // It's possible to make the code faster, if a 177 is hit if the filter below was applied before the collect above. That would save a lot of memory.
@@ -51,7 +52,7 @@ fn main() {
         .take(1)
         .collect::<Vec<_>>();
 
-    // Which is tha maximum value we've got?
+    // Which is the maximum value we've got?
     let max = results.iter().max_by(|a, b| a.1.cmp(&b.1));
 
     if above_177.is_empty() {
