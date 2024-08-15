@@ -9,5 +9,5 @@ Install Rustup tools from: https://rustup.rs/
 Then navigate to the folder and run from the terminal:
 `cargo run --release`
 
-Takes around 3 minutes to run 1 million samples on a Intel i9-9900K (16) @ 5.000GHz.
+Takes around 1 minutes to run 1 million samples on a Intel i9-9900K (16) @ 5.000GHz.
 This uses parallelism.
