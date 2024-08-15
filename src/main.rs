@@ -18,7 +18,7 @@ fn main() {
     // Create the distribution of values beforehand
     let between = Uniform::from(0..4);
 
-    let results: Vec<(u32, u8)> = (0..ROLL_COUNT) // iterate through the number of samples
+    let results: (u32, u8) = (0..ROLL_COUNT) // iterate through the number of samples
         .into_par_iter()
         .map(|roll_number| {
             let mut rng = ThreadRng::default();
@@ -29,8 +29,8 @@ fn main() {
 
             (roll_number, successes)
         })
-        .collect::<Vec<_>>(); // Collect all results in memory.
-                              // That will take around (4 + 1) * 1_000_000_000 bytes or ~5GB of RAM
+        .reduce_with(|a, b| if a.1 > 177 || a.1 >= b.1 { a } else { b })
+        .unwrap();
 
     // Note: Since it's running in parallel, I can't simply break whenever something is above 177.
     // It's possible to make the code faster, if a 177 is hit if the filter below was applied before the collect above. That would save a lot of memory.
@@ -45,28 +45,17 @@ fn main() {
     // Statistics
     // These do some lookup in the saved results, may slow down the code, but we are not counting anymore
 
-    // Did we get anything above 177?
-    let above_177 = results
-        .iter()
-        .filter(|(_, successes)| successes > &177)
-        .take(1)
-        .collect::<Vec<_>>();
-
-    // Which is the maximum value we've got?
-    let max = results.iter().max_by(|a, b| a.1.cmp(&b.1));
-
-    if above_177.is_empty() {
+    if results.1 < 177 {
         // No 177? :(
         println!(
             "In {} tries, no result was above 177. The best result I got was {}",
-            ROLL_COUNT,
-            max.unwrap().1
+            ROLL_COUNT, results.1
         );
     } else {
         // We got at least one 177! Which was the first?
         println!(
-            "The first above 177 (it was a {} successes) happened at {}!",
-            above_177[0].1, above_177[0].0
+            "The first above 177 (it was {} successes) happened at {}!",
+            results.1, results.0
         );
     }
 
