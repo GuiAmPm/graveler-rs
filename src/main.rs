@@ -29,7 +29,23 @@ fn main() {
 
             (roll_number, successes)
         })
-        .reduce_with(|a, b| if a.1 > 177 || a.1 >= b.1 { a } else { b })
+        .reduce_with(|a, b| {
+            // Reduce_with in parallel is not sequential, we need to see which comes first to be deterministic
+            if a.0 > b.0 {
+                // We need to check if it is above 177 or we just pick the maximum
+                if a.1 > 177 || a.1 >= b.1 {
+                    a
+                } else {
+                    b
+                }
+
+                // or B comes first, same thing but in reverse:
+            } else if b.1 > 177 || b.1 >= a.1 {
+                b
+            } else {
+                a
+            }
+        })
         .unwrap();
 
     // Note: Since it's running in parallel, I can't simply break whenever something is above 177.
